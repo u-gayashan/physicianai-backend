@@ -11,7 +11,7 @@ InstructorEmbedding
 auto-gptq
 chromadb
 llama_index
-gTTS
+gTTS==2.4.0
 googletrans
 sqlalchemy
 faster-whisper
