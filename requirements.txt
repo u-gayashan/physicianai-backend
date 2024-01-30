@@ -1,2 +1,17 @@
 fastapi
 uvicorn
+python-multipart
+torch
+faiss-gpu
+transformers
+langchain
+xformers
+sentence_transformers
+InstructorEmbedding
+auto-gptq
+chromadb
+llama_index
+gTTS
+googletrans
+sqlalchemy
+faster-whisper
