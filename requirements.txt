@@ -1,4 +1,0 @@
-fastapi
-uvicorn
-pyngrok
-openai==0.28
