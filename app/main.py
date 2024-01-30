@@ -9,6 +9,7 @@ app = FastAPI()
 app.include_router(language_router)
 
 if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
     # Start ngrok tunnel
     # public_url = ngrok.connect(8000)
     # print("Public URL:", public_url)
