@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 # from controllers import llm_response_controller
-# from controllers.llm_response_controller import router as llm_response_router
+from controllers.llm_response_controller import router as llm_response_router
 from controllers.language_controller import router as language_router
 
 app = FastAPI()
