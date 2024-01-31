@@ -1,5 +1,6 @@
 # llm_response_repository.py
 import torch
+import os
 from auto_gptq import AutoGPTQForCausalLM
 from langchain import HuggingFacePipeline, PromptTemplate
 from langchain.embeddings import HuggingFaceInstructEmbeddings
@@ -14,7 +15,8 @@ class LLMRepository:
         self.embeddings = HuggingFaceInstructEmbeddings(
             model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
         )
-        
+        ROOT_DIR = os.path.abspath(os.curdir)
+        print(ROOT_DIR)
         self.new_db = FAISS.load_local("../../utils/faiss_index", self.embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
