@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from controllers.language_controller import router as language_router
 
 app = FastAPI()
-# app.include_router(llm_response_router)
+app.include_router(llm_response_router)
 app.include_router(language_router)
 
 if __name__ == "__main__":
