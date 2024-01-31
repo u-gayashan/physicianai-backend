@@ -15,9 +15,9 @@ class LLMRepository:
         self.embeddings = HuggingFaceInstructEmbeddings(
             model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
         )
-        ROOT_DIR = os.path.abspath(os.curdir)
+        ROOT_DIR = os.path.abspath(os.curdir) 
         print(ROOT_DIR)
-        self.new_db = FAISS.load_local("../../utils/faiss_index", self.embeddings)
+        self.new_db = FAISS.load_local("/home/ubuntu/physicianai-backend/utils/faiss_index", self.embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
         self.model_basename = "model"
