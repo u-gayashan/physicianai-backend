@@ -10,7 +10,6 @@ sentence-transformers==2.2.2
 InstructorEmbedding==1.0.1
 auto-gptq==0.6.0
 chromadb==0.4.22
-llama_index
 gTTS==2.4.0
 googletrans==3.1.0a0
 sqlalchemy
