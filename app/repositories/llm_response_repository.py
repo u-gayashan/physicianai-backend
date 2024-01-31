@@ -15,8 +15,10 @@ class LLMRepository:
         self.embeddings = HuggingFaceInstructEmbeddings(
             model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
         )
-        ROOT_DIR = os.path.abspath(os.curdir) 
-        print(ROOT_DIR)
+        print("CUDA is available:", torch.cuda.is_available())
+        print("Current CUDA device index:", torch.cuda.current_device())
+        print("CUDA device name:", torch.cuda.get_device_name())
+        
         self.new_db = FAISS.load_local("../utils", self.embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
