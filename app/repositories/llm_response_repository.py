@@ -17,7 +17,7 @@ class LLMRepository:
         )
         ROOT_DIR = os.path.abspath(os.curdir) 
         print(ROOT_DIR)
-        self.new_db = FAISS.load_local("/home/ubuntu/physicianai-backend/utils/faiss_index", self.embeddings)
+        self.new_db = FAISS.load_local("home/ubuntu/physicianai-backend/utils/faiss_index", self.embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
         self.model_basename = "model"
