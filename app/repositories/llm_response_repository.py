@@ -15,9 +15,6 @@ class LLMRepository:
         self.embeddings = HuggingFaceInstructEmbeddings(
             model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
         )
-        print("CUDA is available:", torch.cuda.is_available())
-        print("Current CUDA device index:", torch.cuda.current_device())
-        print("CUDA device name:", torch.cuda.get_device_name())
         
         self.new_db = FAISS.load_local("../utils", self.embeddings)
 
