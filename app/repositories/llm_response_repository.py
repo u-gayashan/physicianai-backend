@@ -92,7 +92,7 @@ class LLMRepository:
         self.qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
+            retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
@@ -100,7 +100,7 @@ class LLMRepository:
         self.qa_chain_a = RetrievalQA.from_chain_type(
             llm=self.llm2,
             chain_type="stuff",
-            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
+            retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
@@ -129,7 +129,7 @@ class LLMRepository:
         self.qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
+            retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
