@@ -40,7 +40,7 @@ class LLMRepository:
         #     model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
         # )
         
-        self.new_db = FAISS.load_local("../utils/faiss_index", embeddings)
+        # self.new_db = FAISS.load_local("../utils/faiss_index", embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
         self.model_basename = "model"
