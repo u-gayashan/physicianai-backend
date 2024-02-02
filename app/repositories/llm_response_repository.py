@@ -1,6 +1,5 @@
 # llm_response_repository.py
 import torch
-import os
 from auto_gptq import AutoGPTQForCausalLM
 from langchain import HuggingFacePipeline, PromptTemplate
 from langchain.embeddings import HuggingFaceInstructEmbeddings
@@ -8,16 +7,40 @@ from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
 from transformers import AutoTokenizer, TextStreamer, pipeline
 
+import psycopg2
+import pgvector
+from psycopg2.extras import execute_values
+from pgvector.psycopg2 import register_vector
+from psycopg2.extras import execute_values
+from pgvector.psycopg2 import register_vector
+from langchain.vectorstores.pgvector import PGVector
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+
 class LLMRepository:
     def __init__(self):
         self.sys = ""
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        self.embeddings = HuggingFaceInstructEmbeddings(
-            model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
-        )
-        print("Cuda is available ?:", torch.cuda.is_available())
+        
+        
+        self.model_kwargs = {"device": "cpu"}
+        self.encode_kwargs = {"normalize_embeddings": True}
 
-        self.new_db = FAISS.load_local("../utils", self.embeddings)
+        self.embeddings = HuggingFaceBgeEmbeddings(
+            model_name="physician-ai/Model81", model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
+        )
+        
+        CONNECTION_STRING = "postgresql+psycopg2://postgres:ElonMusk123@physician-ai.cbtexq15uzag.us-east-1.rds.amazonaws.com:5432/vector_db" 
+
+        store = PGVector(
+            connection_string=CONNECTION_STRING,
+            embedding_function=embeddings,
+            collection_name= "Model 81"
+        )
+        # self.embeddings = HuggingFaceInstructEmbeddings(
+        #     model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
+        # )
+        
+        self.new_db = FAISS.load_local("../utils/faiss_index", self.embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
         self.model_basename = "model"
@@ -69,7 +92,7 @@ class LLMRepository:
         self.qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=self.new_db.as_retriever(search_kwargs={"k": 2}),
+            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
@@ -77,7 +100,7 @@ class LLMRepository:
         self.qa_chain_a = RetrievalQA.from_chain_type(
             llm=self.llm2,
             chain_type="stuff",
-            retriever=self.new_db.as_retriever(search_kwargs={"k": 2}),
+            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
@@ -106,7 +129,7 @@ class LLMRepository:
         self.qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
-            retriever=self.new_db.as_retriever(search_kwargs={"k": 2}),
+            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
@@ -114,7 +137,7 @@ class LLMRepository:
         self.qa_chain_a = RetrievalQA.from_chain_type(
             llm=self.llm2,
             chain_type="stuff",
-            retriever=self.new_db.as_retriever(search_kwargs={"k": 2}),
+            retriever=self.store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": self.prompt},
         )
