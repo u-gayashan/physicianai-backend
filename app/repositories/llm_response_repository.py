@@ -22,10 +22,10 @@ class LLMRepository:
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         
         
-        self.model_kwargs = {"device": "cpu"}
-        self.encode_kwargs = {"normalize_embeddings": True}
+        model_kwargs = {"device": "cpu"}
+        encode_kwargs = {"normalize_embeddings": True}
 
-        self.embeddings = HuggingFaceBgeEmbeddings(
+        embeddings = HuggingFaceBgeEmbeddings(
             model_name="physician-ai/Model81", model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
         )
         
