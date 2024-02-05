@@ -152,15 +152,16 @@ class LLMRepository:
                    return str(result_ex['result']).split("\n\n")[1]
                 except:
                    return str(result_ex['result']).split("\n\n")
-    if str(mode)=="dirrect_QA" and id==3:
-        diagnosis_and_treatment = qa_chain(sys+chain+end_sys_prompts)
-        diagnosis_and_treatment = str(diagnosis_and_treatment['result'])
-        print(diagnosis_and_treatment)
-        print("dirrect answer")
-        return {"english":diagnosis_and_treatment,"translated":translate(diagnosis_and_treatment,language)}
-    if str(mode)=="dirrect_QA" and id>3:
-        qa_text =  str(QA())
-        return {"english":qa_text,"translated":translate(qa_text,language)}
+        if str(mode)=="dirrect_QA" and id==3:
+            diagnosis_and_treatment = qa_chain(sys+chain+end_sys_prompts)
+            diagnosis_and_treatment = str(diagnosis_and_treatment['result'])
+            print(diagnosis_and_treatment)
+            print("dirrect answer")
+            return {"english":diagnosis_and_treatment,"translated":translate(diagnosis_and_treatment,language)}
+            
+        if str(mode)=="dirrect_QA" and id>3:
+            qa_text =  str(QA())
+            return {"english":qa_text,"translated":translate(qa_text,language)}
     
     def refresh_model(self):
         self.llm = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
