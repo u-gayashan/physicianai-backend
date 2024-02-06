@@ -51,85 +51,108 @@ class LLMRepository:
 
         model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
         model_basename = "model"
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
-
-        model = AutoGPTQForCausalLM.from_quantized(
-            model_name_or_path,
-            revision="gptq-4bit-128g-actorder_True",
-            model_basename=model_basename,
-            use_safetensors=True,
-            trust_remote_code=True,
-            device=device,
-            inject_fused_attention=False,
-            quantize_config=None,
-        )
-
-        DEFAULT_SYSTEM_PROMPT = """
-        You are a helpful, respectful and honest assistant. give answer for any questions.
-        """.strip()
-
-        streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
-        text_pipeline = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-            max_new_tokens=4096,
-            temperature=2,
-            top_p=0.95,
-            repetition_penalty=1.15,
-            streamer=streamer,
-        )
-
-        llm = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
-        llm2 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
-
-        SYSTEM_PROMPT = "give answer from external data's. don't use the provided context"
-
-        template = generate_prompt(
-            """
-        {context}
-        Question: {question}
-        """,
-            system_prompt=SYSTEM_PROMPT,
-        )
-        prompt = PromptTemplate(template=template, input_variables=["context", "question"])
-
-        global qa_chain,qa_chain_a
-        qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=store.as_retriever(search_kwargs={"k": 2}),
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": prompt},
-        )
-
-        qa_chain_a = RetrievalQA.from_chain_type(
-            llm=llm2,
-            chain_type="stuff",
-            retriever=store.as_retriever(search_kwargs={"k": 2}),
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": prompt},
-        )
         
-    def translate(text,language):
-        return str(translator.translate(text,dest=keys[vals.index(language)]).text)
-        
-    def generate_prompt(prompt=None, system_prompt=None):
-        if prompt is None:
-            prompt = """
-            {context}
-            Question: {question}
-            """
-
-        if system_prompt is None:
-            system_prompt = DEFAULT_SYSTEM_PROMPT
-
+    tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
+    
+    model = AutoGPTQForCausalLM.from_quantized(
+        model_name_or_path,
+        revision="gptq-4bit-128g-actorder_True",
+        model_basename=model_basename,
+        use_safetensors=True,
+        trust_remote_code=True,
+        device=DEVICE,
+        inject_fused_attention=False,
+        quantize_config=None,
+    )
+    
+    #default promts it will work when we don't set the our custom system propts
+    DEFAULT_SYSTEM_PROMPT = """
+    You are a helpful, respectful and honest assistant. give answer for any questions.
+    """.strip()
+    
+    
+    def generate_prompt(prompt: str, system_prompt: str = DEFAULT_SYSTEM_PROMPT) -> str:
         return f"""
-        [INST] <<SYS>>
-        {system_prompt}
-        <</SYS>>
-        {prompt} [/INST]
-        """.strip()
+    [INST] <<SYS>>
+    {system_prompt}
+    <</SYS>>
+    {prompt} [/INST]
+    """.strip()
+    
+    # setting the RAG pipeline
+    streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+    text_pipeline = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        max_new_tokens=4096,
+        temperature=2,
+        top_p=0.95,
+        repetition_penalty=1.15,
+        streamer=streamer,
+    )
+    global llm,llm2
+    llm = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+    llm2 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+    # when the user query is not related to trained PDF data model will give the response from own knowledge 
+    SYSTEM_PROMPT = "give answer from external data's. don't use the provided context"
+    
+    template = generate_prompt(
+        """
+    {context}
+    Question: {question}
+    """,
+        system_prompt=SYSTEM_PROMPT,
+    )
+    prompt = PromptTemplate(template=template, input_variables=["context", "question"])
+    
+    global qa_chain,qa_chain_a
+    qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=store.as_retriever(search_kwargs={"k": 2}),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": prompt},
+    )
+    
+    qa_chain_a = RetrievalQA.from_chain_type(
+        llm=llm2,
+        chain_type="stuff",
+        retriever=store.as_retriever(search_kwargs={"k": 2}),
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": prompt},
+    )
+    
+    report_prompt_template = """
+    this is report format
+    Patient Name: [Insert name here]<br>
+    Age: [Insert age here]<br>
+    sex: [Insert  here]<br>
+    Chief Complaint: [insert here]<br>
+    History of Present Illness:[insert here]<br>
+    Past Medical History: [insert here]<br>
+    Medication List: [insert here]<br>
+    Social History: [insert here]<br>
+    Family History: [insert here]<br>
+    Review of Systems: [insert here]<br>
+    ICD Code: [insert here]
+    convert this bellow details into above format don't add any other details .don't use the provided pdfs data's.\n\n"""
+    
+    
+    # 4. prompt sets for ask some defined questions and its will guide the model correct way
+    final_question ={
+        8:"Do you have a history of medical conditions, such as allergies, chronic illnesses, or previous surgeries? If so, please provide details.",
+        9:"What medications are you currently taking, including supplements and vitamins?",
+        10:"Can you please Describe Family medical history (particularly close relatives): Does anyone in your immediate family suffer from similar symptoms or health issues?",
+        11:"Can you please Describe Social history: Marital status, occupation, living arrangements, education level, and support system.",
+        12:"Could you describe your symptoms, and have you noticed any changes or discomfort related to your respiratory, cardiovascular, gastrointestinal, or other body systems?"
+    }
+    
+    # 1 . basic first prompt for handled the llama in correct like a family physician
+    sys = "You are a general family physician.\n\n"
+    
+    # 5 . prommpts for get the diagnosis with ICD code based on the conversation, its will handle unrelated questions also(not related to diagnosis)
+    end_sys_prompts = "\n\ngive correct treatment and most related diagnosis with ICD code don't ask any questions. if question is not related to provided data don't give answer from this provided data's"
 
     def QA():
         print("\nopen QA mode running ========================================\n")
