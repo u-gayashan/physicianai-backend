@@ -33,24 +33,24 @@ class LLMRepository:
             model_name="physician-ai/Model81", model_kwargs=model_kwargs, encode_kwargs=encode_kwargs
         )
         
-        CONNECTION_STRING = "postgresql+psycopg2://postgres:ElonMusk123@physician-ai.cbtexq15uzag.us-east-1.rds.amazonaws.com:5432/vector_db" 
+    CONNECTION_STRING = "postgresql+psycopg2://postgres:ElonMusk123@physician-ai.cbtexq15uzag.us-east-1.rds.amazonaws.com:5432/vector_db" 
 
-        store = PGVector(
-            connection_string=CONNECTION_STRING,
-            embedding_function=embeddings,
-            collection_name= "Model 81"
-        )
+    store = PGVector(
+        connection_string=CONNECTION_STRING,
+        embedding_function=embeddings,
+        collection_name= "Model 81"
+    )
         # self.embeddings = HuggingFaceInstructEmbeddings(
         #     model_name="hkunlp/instructor-large", model_kwargs={"device": self.device}
         # )
         
-        genai.configure(api_key="AIzaSyAjG_p_DA8rSsTNUt1w4zQ_7MIZ9ADqvqk")
-        gemini_model = genai.GenerativeModel('gemini-pro')
+    genai.configure(api_key="AIzaSyAjG_p_DA8rSsTNUt1w4zQ_7MIZ9ADqvqk")
+    gemini_model = genai.GenerativeModel('gemini-pro')
 
-        new_db = FAISS.load_local("../utils", embeddings)
+    new_db = FAISS.load_local("../utils", embeddings)
 
-        model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
-        model_basename = "model"
+    model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
+    model_basename = "model"
         
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
     
