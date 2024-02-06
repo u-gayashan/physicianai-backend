@@ -21,9 +21,9 @@ import googletrans
 from googletrans import Translator
 
 class LLMRepository:
-    def __init__(self):
-        self.sys = ""
-        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    def __init__():
+        sys = ""
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
         
         
         model_kwargs = {"device": "cpu"}
@@ -47,76 +47,76 @@ class LLMRepository:
         genai.configure(api_key="AIzaSyAjG_p_DA8rSsTNUt1w4zQ_7MIZ9ADqvqk")
         gemini_model = genai.GenerativeModel('gemini-pro')
 
-        self.new_db = FAISS.load_local("../utils", embeddings)
+        new_db = FAISS.load_local("../utils", embeddings)
 
-        self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
-        self.model_basename = "model"
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path, use_fast=True)
+        model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
+        model_basename = "model"
+        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, use_fast=True)
 
-        self.model = AutoGPTQForCausalLM.from_quantized(
-            self.model_name_or_path,
+        model = AutoGPTQForCausalLM.from_quantized(
+            model_name_or_path,
             revision="gptq-4bit-128g-actorder_True",
-            model_basename=self.model_basename,
+            model_basename=model_basename,
             use_safetensors=True,
             trust_remote_code=True,
-            device=self.device,
+            device=device,
             inject_fused_attention=False,
             quantize_config=None,
         )
 
-        self.DEFAULT_SYSTEM_PROMPT = """
+        DEFAULT_SYSTEM_PROMPT = """
         You are a helpful, respectful and honest assistant. give answer for any questions.
         """.strip()
 
-        self.generate_prompt()
+        generate_prompt()
 
-        self.streamer = TextStreamer(self.tokenizer, skip_prompt=True, skip_special_tokens=True)
-        self.text_pipeline = pipeline(
+        streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+        text_pipeline = pipeline(
             "text-generation",
-            model=self.model,
-            tokenizer=self.tokenizer,
+            model=model,
+            tokenizer=tokenizer,
             max_new_tokens=4096,
             temperature=2,
             top_p=0.95,
             repetition_penalty=1.15,
-            streamer=self.streamer,
+            streamer=streamer,
         )
 
-        self.llm = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
-        self.llm2 = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
+        llm = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+        llm2 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
 
-        self.SYSTEM_PROMPT = "give answer from external data's. don't use the provided context"
+        SYSTEM_PROMPT = "give answer from external data's. don't use the provided context"
 
-        self.template = self.generate_prompt(
+        template = generate_prompt(
             """
         {context}
         Question: {question}
         """,
-            system_prompt=self.SYSTEM_PROMPT,
+            system_prompt=SYSTEM_PROMPT,
         )
-        self.prompt = PromptTemplate(template=self.template, input_variables=["context", "question"])
+        prompt = PromptTemplate(template=template, input_variables=["context", "question"])
 
         global qa_chain,qa_chain_a
         qa_chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
+            llm=llm,
             chain_type="stuff",
             retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
-            chain_type_kwargs={"prompt": self.prompt},
+            chain_type_kwargs={"prompt": prompt},
         )
 
         qa_chain_a = RetrievalQA.from_chain_type(
-            llm=self.llm2,
+            llm=llm2,
             chain_type="stuff",
             retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
-            chain_type_kwargs={"prompt": self.prompt},
+            chain_type_kwargs={"prompt": prompt},
         )
         
     def translate(text,language):
         return str(translator.translate(text,dest=keys[vals.index(language)]).text)
         
-    def generate_prompt(self, prompt=None, system_prompt=None):
+    def generate_prompt(prompt=None, system_prompt=None):
         if prompt is None:
             prompt = """
             {context}
@@ -124,7 +124,7 @@ class LLMRepository:
             """
 
         if system_prompt is None:
-            system_prompt = self.DEFAULT_SYSTEM_PROMPT
+            system_prompt = DEFAULT_SYSTEM_PROMPT
 
         return f"""
         [INST] <<SYS>>
@@ -164,31 +164,60 @@ class LLMRepository:
             qa_text =  str(QA())
             return {"english":qa_text,"translated":translate(qa_text,language)}
     
-    def refresh_model(self):
+    def refresh_model():
         global llm,llm2
-        llm = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
-        llm2 = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
+        llm = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+        llm2 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
         
         global qa_chain,qa_chain_a
         qa_chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
+            llm=llm,
             chain_type="stuff",
             retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
-            chain_type_kwargs={"prompt": self.prompt},
+            chain_type_kwargs={"prompt": prompt},
         )
 
         qa_chain_a = RetrievalQA.from_chain_type(
-            llm=self.llm2,
+            llm=llm2,
             chain_type="stuff",
             retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
-            chain_type_kwargs={"prompt": self.prompt},
+            chain_type_kwargs={"prompt": prompt},
         )
-
         print("Model refreshed")
-        
-    def get_response(self, chain, id, mode):
+
+    report_prompt_template = """
+    this is report format
+    Patient Name: [Insert name here]<br>
+    Age: [Insert age here]<br>
+    sex: [Insert  here]<br>
+    Chief Complaint: [insert here]<br>
+    History of Present Illness:[insert here]<br>
+    Past Medical History: [insert here]<br>
+    Medication List: [insert here]<br>
+    Social History: [insert here]<br>
+    Family History: [insert here]<br>
+    Review of Systems: [insert here]<br>
+    ICD Code: [insert here]
+    convert this bellow details into above format don't add any other details .don't use the provided pdfs data's.\n\n"""
+    
+    # 4. prompt sets for ask some defined questions and its will guide the model correct way
+    final_question ={
+        8:"Do you have a history of medical conditions, such as allergies, chronic illnesses, or previous surgeries? If so, please provide details.",
+        9:"What medications are you currently taking, including supplements and vitamins?",
+        10:"Can you please Describe Family medical history (particularly close relatives): Does anyone in your immediate family suffer from similar symptoms or health issues?",
+        11:"Can you please Describe Social history: Marital status, occupation, living arrangements, education level, and support system.",
+        12:"Could you describe your symptoms, and have you noticed any changes or discomfort related to your respiratory, cardiovascular, gastrointestinal, or other body systems?"
+    }
+    
+    # 1 . basic first prompt for handled the llama in correct like a family physician
+    sys = "You are a general family physician.\n\n"
+    
+    # 5 . prommpts for get the diagnosis with ICD code based on the conversation, its will handle unrelated questions also(not related to diagnosis)
+    end_sys_prompts = "\n\ngive correct treatment and most related diagnosis with ICD code don't ask any questions. if question is not related to provided data don't give answer from this provided data's"        
+
+    def get_response(chain, id, mode):
         if id<13:
 
             if id>=8:
