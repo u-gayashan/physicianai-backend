@@ -136,7 +136,7 @@ global qa_chain,qa_chain_a
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
     chain_type="stuff",
-    retriever=new_db.as_retriever(search_kwargs={"k": 2}),
+    retriever=store.as_retriever(search_kwargs={"k": 2}),
     return_source_documents=True,
     chain_type_kwargs={"prompt": prompt},
 )
@@ -144,7 +144,7 @@ qa_chain = RetrievalQA.from_chain_type(
 qa_chain_a = RetrievalQA.from_chain_type(
     llm=llm2,
     chain_type="stuff",
-    retriever=new_db.as_retriever(search_kwargs={"k": 2}),
+    retriever=store.as_retriever(search_kwargs={"k": 2}),
     return_source_documents=True,
     chain_type_kwargs={"prompt": prompt},
 )
@@ -191,7 +191,7 @@ def refresh_model():
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
-            retriever=new_db.as_retriever(search_kwargs={"k": 2}),
+            retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": prompt},
         )
@@ -199,7 +199,7 @@ def refresh_model():
         qa_chain_a = RetrievalQA.from_chain_type(
             llm=llm2,
             chain_type="stuff",
-            retriever=new_db.as_retriever(search_kwargs={"k": 2}),
+            retriever=store.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": prompt},
         )
