@@ -96,6 +96,7 @@ class LLMRepository:
         )
         self.prompt = PromptTemplate(template=self.template, input_variables=["context", "question"])
 
+        global qa_chain,qa_chain_a
         qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
@@ -164,9 +165,11 @@ class LLMRepository:
             return {"english":qa_text,"translated":translate(qa_text,language)}
     
     def refresh_model(self):
-        self.llm = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
-        self.llm2 = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
-
+        global llm,llm2
+        llm = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
+        llm2 = HuggingFacePipeline(pipeline=self.text_pipeline, model_kwargs={"temperature": 2})
+        
+        global qa_chain,qa_chain_a
         qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
