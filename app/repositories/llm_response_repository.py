@@ -21,7 +21,7 @@ import googletrans
 from googletrans import Translator
 
 class LLMRepository:
-    def __init__():
+    def __init__(self):
         sys = ""
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
         
