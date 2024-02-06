@@ -60,7 +60,7 @@ class LLMRepository:
             model_basename=model_basename,
             use_safetensors=True,
             trust_remote_code=True,
-            device=DEVICE,
+            device=device,
             inject_fused_attention=False,
             quantize_config=None,
         )
