@@ -68,8 +68,6 @@ class LLMRepository:
         You are a helpful, respectful and honest assistant. give answer for any questions.
         """.strip()
 
-        generate_prompt()
-
         streamer = TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
         text_pipeline = pipeline(
             "text-generation",
