@@ -96,7 +96,7 @@ class LLMRepository:
         )
         self.prompt = PromptTemplate(template=self.template, input_variables=["context", "question"])
 
-        self.qa_chain = RetrievalQA.from_chain_type(
+        qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
             retriever=store.as_retriever(search_kwargs={"k": 2}),
@@ -104,7 +104,7 @@ class LLMRepository:
             chain_type_kwargs={"prompt": self.prompt},
         )
 
-        self.qa_chain_a = RetrievalQA.from_chain_type(
+        qa_chain_a = RetrievalQA.from_chain_type(
             llm=self.llm2,
             chain_type="stuff",
             retriever=store.as_retriever(search_kwargs={"k": 2}),
