@@ -47,7 +47,7 @@ class LLMRepository:
         genai.configure(api_key="AIzaSyAjG_p_DA8rSsTNUt1w4zQ_7MIZ9ADqvqk")
         gemini_model = genai.GenerativeModel('gemini-pro')
 
-        self.new_db = FAISS.load_local("../utils/faiss_index", embeddings)
+        self.new_db = FAISS.load_local("../utils", embeddings)
 
         self.model_name_or_path = "TheBloke/Llama-2-13B-chat-GPTQ"
         self.model_basename = "model"
