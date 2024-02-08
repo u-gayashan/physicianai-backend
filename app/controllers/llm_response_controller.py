@@ -71,7 +71,7 @@ store = PGVector(
 # embeddings = HuggingFaceInstructEmbeddings(
 #     model_name="hkunlp/instructor-large", model_kwargs={"device": DEVICE}
 # )
-# new_db = FAISS.load_local("faiss_index", embeddings)
+new_db = FAISS.load_local("../utils/", embeddings)
 
 # model_name_or_path = "llama2"
 # model_basename = "model"
@@ -117,9 +117,10 @@ text_pipeline = pipeline(
     repetition_penalty=1.15,
     streamer=streamer,
 )
-global llm,llm2
+global llm,llm2,llm3
 llm = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
 llm2 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+llm3 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
 # when the user query is not related to trained PDF data model will give the response from own knowledge 
 SYSTEM_PROMPT = "give answer from external data's. don't use the provided context"
 
@@ -132,11 +133,20 @@ Question: {question}
 )
 prompt = PromptTemplate(template=template, input_variables=["context", "question"])
 
-global qa_chain,qa_chain_a
+global qa_chain,qa_chain_a,qa_chain_v
+
+qa_chain_v = RetrievalQA.from_chain_type(
+    llm=llm3,
+    chain_type="stuff",
+    retriever=store.as_retriever(search_kwargs={"k": 2}),
+    return_source_documents=True,
+    chain_type_kwargs={"prompt": prompt},
+)
+
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
     chain_type="stuff",
-    retriever=store.as_retriever(search_kwargs={"k": 2}),
+    retriever=new_db.as_retriever(search_kwargs={"k": 2}),
     return_source_documents=True,
     chain_type_kwargs={"prompt": prompt},
 )
@@ -144,7 +154,7 @@ qa_chain = RetrievalQA.from_chain_type(
 qa_chain_a = RetrievalQA.from_chain_type(
     llm=llm2,
     chain_type="stuff",
-    retriever=store.as_retriever(search_kwargs={"k": 2}),
+    retriever=new_db.as_retriever(search_kwargs={"k": 2}),
     return_source_documents=True,
     chain_type_kwargs={"prompt": prompt},
 )
@@ -183,15 +193,26 @@ end_sys_prompts = "\n\ngive correct treatment and most related diagnosis with IC
 
 
 def refresh_model():
-        global llm,llm2
+        global llm,llm2,llm3
         llm = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
         llm2 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+        llm3 = HuggingFacePipeline(pipeline=text_pipeline, model_kwargs={"temperature": 2})
+    
+        global qa_chain,qa_chain_a,qa_chain_v
 
-        global qa_chain,qa_chain_a
+        
+        qa_chain_v = RetrievalQA.from_chain_type(
+            llm=llm3,
+            chain_type="stuff",
+            retriever=store.as_retriever(search_kwargs={"k": 2}),
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": prompt},
+        )
+
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
-            retriever=store.as_retriever(search_kwargs={"k": 2}),
+            retriever=new_db.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": prompt},
         )
@@ -199,7 +220,7 @@ def refresh_model():
         qa_chain_a = RetrievalQA.from_chain_type(
             llm=llm2,
             chain_type="stuff",
-            retriever=store.as_retriever(search_kwargs={"k": 2}),
+            retriever=new_db.as_retriever(search_kwargs={"k": 2}),
             return_source_documents=True,
             chain_type_kwargs={"prompt": prompt},
         )
@@ -238,7 +259,7 @@ async def llm_response(chain,id,mode,language):
                    return str(result_ex['result']).split("\n\n")
 
     if str(mode)=="dirrect_QA" and id==3:
-        diagnosis_and_treatment = qa_chain(sys+chain+end_sys_prompts)
+        diagnosis_and_treatment = qa_chain_v(sys+chain+end_sys_prompts)
         diagnosis_and_treatment = str(diagnosis_and_treatment['result'])
         print(diagnosis_and_treatment)
         print("dirrect answer")
@@ -281,7 +302,7 @@ async def llm_response(chain,id,mode,language):
                    return {"english":str(question['result']),"translated":translate(str(question['result']),language)}
 
     if id==13:
-        diagnosis_and_treatment = qa_chain(sys+chain+end_sys_prompts)
+        diagnosis_and_treatment = qa_chain_v(sys+chain+end_sys_prompts)
         diagnosis_and_treatment = str(diagnosis_and_treatment['result'])
         print(mode,diagnosis_and_treatment)
         report = qa_chain_a(report_prompt_template+sys+chain+"\n\ntreatment & diagnosis with ICD code below\n"+diagnosis_and_treatment)
