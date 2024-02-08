@@ -68,10 +68,10 @@ store = PGVector(
     collection_name= "Model 81"
 )
 
-# embeddings = HuggingFaceInstructEmbeddings(
-#     model_name="hkunlp/instructor-large", model_kwargs={"device": DEVICE}
-# )
-new_db = FAISS.load_local("../utils/", embeddings)
+embeddings1 = HuggingFaceInstructEmbeddings(
+    model_name="hkunlp/instructor-large", model_kwargs={"device": DEVICE}
+)
+new_db = FAISS.load_local("../utils/", embeddings1)
 
 # model_name_or_path = "llama2"
 # model_basename = "model"
